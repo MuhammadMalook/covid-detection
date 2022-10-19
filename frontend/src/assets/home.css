@@ -1,0 +1,24 @@
+
+.container{
+    margin: 10%;
+    justify-content: center;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    flex-direction: column;  
+    text-align: center;
+    padding: 2%;
+    
+
+}
+table{
+    border-radius: 50px;
+}
+tr{
+    color: rgb(4, 8, 73);
+}
+.btn-container {
+
+    justify-content:space-evenly;
+    
+}

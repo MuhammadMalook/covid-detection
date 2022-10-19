@@ -57,9 +57,23 @@ app.get('/users',passport.authenticate('adminAuth',{ session: false }) ,async(re
         if(results.length > 0)
         return res.status(200).json({success:true, data:results})
         else
-        return res.status(200).json({success:true, message:"no record found"})
+        return res.status(200).json({success:false, message:"no record found"})
 
     })
   })
+  app.post("/addUser",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+   
+    const {TAGID, name, email, password, college} = req.body
+    const post = {name, email, password, college, TAGID}
+    if(!TAGID || !name || !email || !password || !college)
+        return res.status(400).json({success:false, message:"Please enter complete data"})
+    connection.con.query('INSERT INTO users SET ?', post,
+    function(error,results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+       
+        return res.status(200).json({success:true, data:results})
+    }) 
+  }      
+  )
 
 module.exports = app
