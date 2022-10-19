@@ -18,6 +18,7 @@ export default function Home() {
         setLoading(true)
         var auth = "Bearer ".concat(JSON.parse(token))
         console.log(auth)
+    if(token){
         const response = await fetch('/users', {
             method:"GET",
             headers:{
@@ -26,6 +27,7 @@ export default function Home() {
                 "Authorization": auth,
             },
         })
+        console.log(response)
       
         if(response.statusText == "Unauthorized") {
             console.log("heeereree")
@@ -53,6 +55,11 @@ export default function Home() {
 
         }
     }
+}
+else{
+   
+    navigate('/')
+}
     }
 
     useEffect(()=>{

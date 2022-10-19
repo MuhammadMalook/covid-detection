@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Register from './screens/Register'
 import "./App.css"
+import Navbar from './screens/Navbar'
 
 import {
   BrowserRouter as Router,
@@ -13,10 +14,13 @@ import Home from './screens/Home';
 import AddUser from './screens/AddUser';
 
 
+
+
 export default function App() {
   return (
     <>
-    <Router>
+    <Router>  
+    <Navbar/>
     <Routes>
         <Route path = '/home' element={<Home/>}/>
         <Route index path="/" element={<Login/>}/>

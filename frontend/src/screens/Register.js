@@ -2,7 +2,7 @@ import React from 'react'
 import { Formik, Form } from 'formik'
 import TextField from './TextField'
 import * as Yup from 'yup';
-import image from '../assets/logo.png';
+import image from '../assets/covid_icon.png';
 import {Link} from 'react-router-dom'
 import { useNavigate } from 'react-router-dom';
 
