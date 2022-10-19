@@ -17,9 +17,9 @@ var con = mysql.createConnection({
 });
 
 con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
+  if (err) throw err
+  console.log("Connected!")
+})
 app.listen(port);
 
 console.log('API server started on: ' + con);
