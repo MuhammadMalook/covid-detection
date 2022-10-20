@@ -20,7 +20,7 @@ export default function App() {
   return (
     <>
     <Router>  
-    <Navbar/>
+    <Navbar />
     <Routes>
         <Route path = '/home' element={<Home/>}/>
         <Route index path="/" element={<Login/>}/>

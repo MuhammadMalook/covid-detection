@@ -6,6 +6,9 @@ import image from '../assets/covid_icon.png';
 import {Link} from 'react-router-dom'
 import '../assets/Login.css'
 import { useNavigate } from 'react-router-dom';
+import store from '../redux/store';
+import { login, logout } from '../redux/constants';
+
 
 function Login() {
   const [api, setApi] = useState(true)
@@ -14,19 +17,25 @@ function Login() {
     console.log("checccccckkllk")
     setApi(false)
     var token =  localStorage.getItem('token')
+    
    if(token){
+    console.log(token)
     var auth = "Bearer ".concat(JSON.parse(token))
-    const response = await fetch('/admin', {
+    console.log(auth)
+
+    const response = await fetch('/check', {
         method:"GET",
         headers:{
-            Accept: 'application/json',
+             Accept: 'application/json',
             'Content-Type': 'application/json',
             "Authorization": auth,
         },
     })
+    console.log(response)
     const jsonData = await response.json()
+    console.log(jsonData)
     console.log(jsonData,"jsonDAta")
-    setApi(true)
+    setApi(false)
     if(jsonData.success)
     {
         navigate('/home')
@@ -44,7 +53,7 @@ setApi(true)
 }
   useEffect(()=>{
     
-    //checkToken()
+    checkToken()
   },[])
 
   const navigate  = useNavigate()
@@ -84,6 +93,7 @@ setApi(true)
         
         localStorage.setItem("token", JSON.stringify(jsonData.token))
         console.log(localStorage.getItem("token"))
+        store.dispatch(login(true))
         navigate('/home')
       }
       else{

@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import image from '../assets/virus_icon.png'
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { login, logout } from '../redux/constants';
+import { useSelector } from 'react-redux';
+import store from "../redux/store";
+
 
 const Navbar = ()=>{
+  const [token,setToken] = useState(localStorage.getItem("token"))
+  const user = useSelector((state)=>state.isLogged)
+
+  useEffect(()=>{
+     setToken(localStorage.getItem("token"))
+  },[user])
     return(
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" >
         <div class="container-fluid" >
@@ -25,9 +35,20 @@ const Navbar = ()=>{
              
             </ul>
             <ul className="navbar-nav navbar-right">
-            <li class="nav-item">
-                <Link to="#" className="text-decoration-none" ><a class="nav-link active " aria-current="page" href="#">Logout</a></Link>
+              {
+                token ? <li class="nav-item">
+                <Link to="/" className="text-decoration-none" onClick={()=>{
+                  console.log("logout")
+                  setToken(null)
+                  localStorage.clear() 
+                  store.dispatch(logout(false))
+                  
+                }}  ><a class="nav-link active " oaria-current="page" href="#">Logout</a></Link>
+              </li>: <li class="nav-item">
+                
               </li>
+              }
+            
             </ul>
             
           </div>

@@ -38,7 +38,7 @@ export default function Home() {
         }
         else{
         const jsonData = await response.json()
-        // console.log(jsonData.data,"jsonDAta")
+        console.log(jsonData.data,"jsonDAta")
          if(jsonData.success)
         {
             setTimeout(()=>{
