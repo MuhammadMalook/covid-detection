@@ -15,8 +15,9 @@ app.use(passport.initialize());
 const connection = require('../server')
 
 
-app.get('/', (req,res)=>{
-    res.status(200).json({msg:"hello"})
+app.get('/check', passport.authenticate('adminAuth',{ session: false }), (req,res)=>{
+    console.log("heree")
+    return res.status(200).json({success:true, msg:"logged in"})
 })
 
 app.post('/login', async(req, res)=>{
@@ -75,5 +76,7 @@ app.get('/users',passport.authenticate('adminAuth',{ session: false }) ,async(re
     }) 
   }      
   )
+
+
 
 module.exports = app

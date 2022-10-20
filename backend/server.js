@@ -22,6 +22,6 @@ con.connect(function(err) {
 })
 app.listen(port);
 
-console.log('API server started on: ' + con);
+console.log('API server started on: ' + port);
 
 exports.con = con
