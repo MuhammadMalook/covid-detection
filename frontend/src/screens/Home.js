@@ -44,7 +44,7 @@ export default function Home() {
             setTimeout(()=>{
                 setUsers(jsonData.data)
                 setLoading(false)
-            },2000)
+            },300)
            
         }
         else {

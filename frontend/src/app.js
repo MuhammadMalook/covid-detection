@@ -12,6 +12,7 @@ import {
 import Login from './screens/Login';
 import Home from './screens/Home';
 import AddUser from './screens/AddUser';
+import Temperature from './screens/Temperature';
 
 
 
@@ -26,6 +27,8 @@ export default function App() {
         <Route index path="/" element={<Login/>}/>
         <Route path='/register' element={<Register/>}/> 
         <Route path='/adduser' element={<AddUser/>}/> 
+        <Route path='/temperature' element={<Temperature/>}/> 
+
         </Routes>
     </Router>
     
