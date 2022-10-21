@@ -62,6 +62,7 @@ app.get('/users',passport.authenticate('adminAuth',{ session: false }) ,async(re
 
     })
   })
+
   app.post("/addUser",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    
     const {TAGID, name, email, password, college} = req.body
@@ -77,6 +78,36 @@ app.get('/users',passport.authenticate('adminAuth',{ session: false }) ,async(re
   }      
   )
 
+  app.post("/user-temp",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+   
+    const {TAGID, BodyTemp} = req.body
+    console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
+    const Test_Date = new Date().toLocaleDateString()
+    const Test_Time = new Date().toLocaleTimeString()
+    const post = {BodyTemp, Test_Date, Test_Time, TAGID}
+    if(!TAGID || !BodyTemp || !Test_Date || !Test_Time)
+        return res.status(400).json({success:false, message:"Please enter complete data"})
+    connection.con.query('INSERT INTO temperature SET ?', post,
+    function(error,results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+       
+        return res.status(200).json({success:true, data:results})
+    }) 
+  }      
+  )
+
+app.get('/users-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+    
+    console.log("after verify")
+    connection.con.query("SELECT * from users inner join temperature using(TAGID)", function(error, results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+        if(results.length > 0)
+        return res.status(200).json({success:true, data:results})
+        else
+        return res.status(200).json({success:false, message:"no record found"})
+
+    })
+  })
 
 
 module.exports = app
