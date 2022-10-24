@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import BounceLoader from 'react-spinners/BounceLoader';
 import ClipLoader from "react-spinners/BounceLoader";
-import '../assets/home.css'
+// import '../assets/home.css'
 // import image from '../../../backend/uploads/'
 // import image from '../assets/logo.png'
 
-export default function Home() {
+export default function Faculty() {
 
     const baseUrl = process.env.REACT_APP_BASE_URL
     const [users, setUsers] = useState([])
@@ -19,7 +19,7 @@ export default function Home() {
         var auth = "Bearer ".concat(JSON.parse(token))
         console.log(auth)
     if(token){
-        const response = await fetch('/student', {
+        const response = await fetch('/faculty', {
             method:"GET",
             headers:{
                 Accept: 'application/json',
@@ -83,8 +83,7 @@ else{
           }}  size={60} aria-label="Loading Spinner" />
     }
  { !loading && users.length > 0 ? <div className='container'>
-   <div className='row'>
-        <div className='col-md-12 col-sm-12'>
+   
 
      <table class="table table-hover align-middle">
          
@@ -139,15 +138,12 @@ else{
             
             }
         </table> 
-        <input type={"button"} value={"Add New Student"} className="btn btn-dark mybtn" onClick={()=>{
+        <input type={"button"} value={"Add New Faculty"} className="btn btn-dark mybtn" onClick={()=>{
                     navigate('/adduser')
 
         }}/>
-
-    </div>
-    </div>
+    
      </div>: !loading ? <div style={{display:'flex', justifyContent:'center'}}>No data available</div>: <div></div>
-
 }
      </>
   )

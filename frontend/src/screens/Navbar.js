@@ -26,6 +26,9 @@ const Navbar = ()=>{
               <Link to="/home" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">Students</a></Link>
               </li>
               <li class="nav-item">
+              <Link to="/faculty" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">Faculty</a></Link>
+              </li>
+              <li class="nav-item">
               <Link to="/temperature" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">Temperature</a></Link>
 
               </li>

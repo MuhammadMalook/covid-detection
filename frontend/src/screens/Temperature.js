@@ -1,20 +1,22 @@
 import React,{ useEffect, useState }  from 'react'
 import { useNavigate } from 'react-router-dom'
 import BounceLoader from 'react-spinners/BounceLoader';
+import Faculty from './Faculty';
 
 export default function Temperature() {
 
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(false)
     const [token,setToken] = useState(localStorage.getItem("token"))
+    const [url, seturl] = useState("students-temp")
     const navigate = useNavigate()
 
     const checkToken = async() => {
         setLoading(true)
         var auth = "Bearer ".concat(JSON.parse(token))
-        console.log(auth)
+        console.log(auth, url)
     if(token){
-            const response = await fetch('/users-temp', {
+            const response = await fetch(`/${url}`, {
                 method:"GET",
                 headers:{
                     Accept: 'application/json',
@@ -60,7 +62,7 @@ export default function Temperature() {
 
 useEffect(()=>{
     checkToken()
-},[])
+},[url])
 
   return (
     <> 
@@ -71,8 +73,17 @@ useEffect(()=>{
                 borderColor: "red",
             }}  size={60} aria-label="Loading Spinner" />
         }
-        { !loading ? <div className='container'>
+        { !loading && users.length > 0 ? <div className='container'>
         
+       
+      <select  style={{marginBottom:40}}
+        onChange={(event) => seturl(event.target.value)}
+       value={url}
+      >
+        <option value="students-temp">Students</option>
+        <option value="faculty-temp">Faculty</option>
+      </select>
+   
 
             <table class="table table-hover align-middle">
                 
@@ -119,7 +130,7 @@ useEffect(()=>{
 
                 }}/> */}
             
-            </div>: <div></div>
+            </div>: !loading ? <div style={{display:'flex', justifyContent:'center'}}>No data available</div>: <div></div>
         }
      </>
   )

@@ -13,6 +13,7 @@ import Login from './screens/Login';
 import Home from './screens/Home';
 import AddUser from './screens/AddUser';
 import Temperature from './screens/Temperature';
+import Faculty from './screens/Faculty';
 
 
 
@@ -24,6 +25,7 @@ export default function App() {
     <Navbar />
     <Routes>
         <Route path = '/home' element={<Home/>}/>
+        <Route path = '/faculty' element={<Faculty/>}/>
         <Route index path="/" element={<Login/>}/>
         <Route path='/register' element={<Register/>}/> 
         <Route path='/adduser' element={<AddUser/>}/> 

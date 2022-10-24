@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Formik, Form } from 'formik'
+import { Formik, Form, Field } from 'formik'
 import TextField from './TextField'
 import * as Yup from 'yup';
 import image from '../assets/covid_icon.png';
 import {Link} from 'react-router-dom'
-import '../assets/Login.css'
+// import '../assets/Login.css'
 import { useNavigate } from 'react-router-dom';
 import store from '../redux/store';
 import { login, logout } from '../redux/constants';
@@ -32,6 +32,14 @@ function Login() {
         },
     })
     console.log(response)
+   if(response.statusText == "Unauthorized")
+   {
+            console.log("heeereree")
+            localStorage.clear()
+            navigate('/')
+            setToken(null)
+   }
+   else{
     const jsonData = await response.json()
     console.log(jsonData)
     console.log(jsonData,"jsonDAta")
@@ -47,6 +55,7 @@ function Login() {
 
     }
   }
+}
   else{
 setApi(true)
   }
@@ -73,11 +82,12 @@ setApi(true)
     initialValues={{
       email: '',
       password: '',
+      role: '',
     }}
     validationSchema={validate}
     onSubmit={async(values) => {
-      const body = {email:values.email, password:values.password }
-      console.log(body)
+      const body = {email:values.email, password:values.password, role:values.role }
+      console.log(values)
       const response = await fetch('/login', {
         method:"POST",
         headers:{
@@ -116,9 +126,34 @@ setApi(true)
               
               <TextField label="Email" name="email" type="email" />
               <TextField label="password" name="password" type="password" />
+
+            <div role="group" aria-labelledby="my-radio-group" style={{display:'flex',justifyContent:'space-around', marginTop:30}} className="col-md-6 col-sm-8">
+              <label>
+                <Field type="radio" name="role" value="admin" />
+                Admin
+              </label>
+              <label>
+                <Field type="radio" name="role" value="faculty" />
+                Faculty
+              </label>
+              <label>
+                <Field type="radio" name="role" value="student" />
+                  Student
+              </label>
+             
+          </div>
+
               <button className="btn btn-dark mt-3" type="submit">Login</button>
               <button className="btn btn-danger mt-3" type="reset" style={{marginLeft:20}}>Reset</button>
             </Form>
+        {/* <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="admin"/>
+              <label class="form-check-label" for="inlineRadio1">Admin</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"/>
+              <label class="form-check-label" for="inlineRadio2">2</label>
+      </div> */}
             <div style={{marginTop:"15px"}}>don't have an account? <Link to="/register">sign up</Link></div>
           </div>
         </div>
