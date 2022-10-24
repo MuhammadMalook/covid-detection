@@ -21,39 +21,65 @@ app.get('/check', passport.authenticate('adminAuth',{ session: false }), (req,re
 })
 
 app.post('/login', async(req, res)=>{
-    const {email, password} = req.body
-    if(!email || !password)
+    const {email, password, role} = req.body
+    if(!email || !password || !role)
         return res.status(401).json({success:false, msg:"please enter full data"})
 
-    connection.con.query(`SELECT * from admin where email='${email}'`,function (error, results, fields) {
-        if (error) return res.status(400).json({error:error}) ;
-        console.log(results[0].password)
-        if(results.length > 0){
-            if(results[0].password == password)
-            {
-                const token =  jwt.sign({email},process.env.JWT_SECRET, {
-                    algorithm:'HS256',
-                    expiresIn:'1h'
-                })
-                return res.status(200).json({success:true, data:results, message:"logged in", token})
+    if(role == "admin") {
+        connection.con.query(`SELECT * from admin where email='${email}'`,function (error, results, fields) {
+            if (error) return res.status(400).json({error:error}) ;
+            console.log(results[0].password)
+            if(results.length > 0){
+                if(results[0].password == password)
+                {
+                    const token =  jwt.sign({email},process.env.JWT_SECRET, {
+                        algorithm:'HS256',
+                        expiresIn:'1h'
+                    })
+                    return res.status(200).json({success:true, data:results, message:"logged in", token})
+                }
+                    
+                else
+                    return res.status(200).json({msg:"incorrect password"})
+                    
             }
-                   
-            else
-                return res.status(200).json({msg:"incorrect password"})
-                   
-        }
-        else{
-           return res.status(200).json({msg:"incorrect email"})
-        }
-        }) 
+            else{
+            return res.status(200).json({msg:"incorrect email"})
+            }
+            }) 
+    }
+    else if(role=="faculty"){
+            connection.con.query(`SELECT * from admin where email='${email}'`,function (error, results, fields) {
+                if (error) return res.status(400).json({error:error}) ;
+                console.log(results[0].password)
+                if(results.length > 0){
+                    if(results[0].password == password)
+                    {
+                        const token =  jwt.sign({email},process.env.JWT_SECRET, {
+                            algorithm:'HS256',
+                            expiresIn:'1h'
+                        })
+                        return res.status(200).json({success:true, data:results, message:"logged in", token})
+                    }
+                        
+                    else
+                        return res.status(200).json({msg:"incorrect password"})
+                        
+                }
+                else{
+                return res.status(200).json({msg:"incorrect email"})
+                }
+                }) 
+    }
+
 
 
 })
 
-app.get('/users',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
     console.log("after verify")
-    connection.con.query("SELECT * from users", function(error, results, fields){
+    connection.con.query("SELECT * from student", function(error, results, fields){
         if(error) return res.status(400).json({success:false,message:error})
         if(results.length > 0)
         return res.status(200).json({success:true, data:results})
@@ -63,22 +89,43 @@ app.get('/users',passport.authenticate('adminAuth',{ session: false }) ,async(re
     })
   })
 
+  app.get('/faculty',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+    
+    console.log("after verify")
+    connection.con.query("SELECT * from faculty", function(error, results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+        if(results.length > 0)
+        return res.status(200).json({success:true, data:results})
+        else
+        return res.status(200).json({success:false, message:"no record found"})
+
+    })
+  })  
+
   app.post("/addUser",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    
-    const {TAGID, name, email, password, college} = req.body
+    const {TAGID, name, email, password, college, role} = req.body
+    const register = {TAGID, role}
     const post = {name, email, password, college, TAGID}
-    if(!TAGID || !name || !email || !password || !college)
+    if(!TAGID || !name || !email || !password || !college || !role)
         return res.status(400).json({success:false, message:"Please enter complete data"})
-    connection.con.query('INSERT INTO users SET ?', post,
+    
+        
+    connection.con.query('INSERT INTO registration SET ?', register,
     function(error,results, fields){
         if(error) return res.status(400).json({success:false,message:error})
        
-        return res.status(200).json({success:true, data:results})
+        connection.con.query(`INSERT INTO ${role} SET ?`, post,
+            function(error,results, fields){
+            if(error) return res.status(400).json({success:false,message:error})
+            return res.status(200).json({success:true, data:results})
     }) 
   }      
   )
+}
+)
 
-  app.post("/user-temp",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+  app.post("/students-temp",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    
     const {TAGID, BodyTemp} = req.body
     console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
@@ -96,18 +143,31 @@ app.get('/users',passport.authenticate('adminAuth',{ session: false }) ,async(re
   }      
   )
 
-app.get('/users-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
     console.log("after verify")
-    connection.con.query("SELECT * from users inner join temperature using(TAGID)", function(error, results, fields){
+    connection.con.query("SELECT * from student join temperature using(TAGID)", function(error, results, fields){
         if(error) return res.status(400).json({success:false,message:error})
         if(results.length > 0)
         return res.status(200).json({success:true, data:results})
         else
-        return res.status(200).json({success:false, message:"no record found"})
+        return res.status(200).json({success:true,data:[], message:"no record found"})
 
     })
   })
+
+  app.get('/faculty-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+    
+    console.log("after verify")
+    connection.con.query("SELECT * from faculty join temperature using(TAGID)", function(error, results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+        if(results.length > 0)
+        return res.status(200).json({success:true, data:results})
+        else
+        return res.status(200).json({success:true,data:[], message:"no record found"})
+
+    })
+  })  
 
 
 module.exports = app
