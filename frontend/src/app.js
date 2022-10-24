@@ -14,11 +14,37 @@ import Home from './screens/Home';
 import AddUser from './screens/AddUser';
 import Temperature from './screens/Temperature';
 import Faculty from './screens/Faculty';
+import AddPcr from './screens/AddPcr';
 
+import { login, logout } from './redux/constants';
+import { useSelector } from 'react-redux';
+import store from './redux/store';
 
 
 
 export default function App() {
+  
+  
+  const checkAdmin = async(token)=>{
+    const response = await fetch(`/checkAdmin/${token}`, {
+      method:"GET"
+    })
+    const jsonData = await response.json()
+    console.log(jsonData, "json")
+    if(jsonData.success)
+    {
+      store.dispatch(login(jsonData.role))
+    }
+    
+    
+
+    
+  }
+
+  useEffect(()=>{
+    const token = localStorage.getItem("token")
+      checkAdmin(token)
+  },[])
   return (
     <>
     <Router>  
@@ -30,6 +56,8 @@ export default function App() {
         <Route path='/register' element={<Register/>}/> 
         <Route path='/adduser' element={<AddUser/>}/> 
         <Route path='/temperature' element={<Temperature/>}/> 
+        <Route path='/addPcr' element={<AddPcr/>}/> 
+
 
         </Routes>
     </Router>

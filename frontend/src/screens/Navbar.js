@@ -9,11 +9,14 @@ import store from "../redux/store";
 const Navbar = ()=>{
   const [token,setToken] = useState(localStorage.getItem("token"))
   const user = useSelector((state)=>state.isLogged)
+  const role = useSelector((state)=>state.role)
+
 
   useEffect(()=>{
      setToken(localStorage.getItem("token"))
   },[user])
     return(
+
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" >
         <div class="container-fluid" >
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo01" aria-controls="navbarTogglerDemo01" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,7 +24,10 @@ const Navbar = ()=>{
           </button>
           <div class="collapse navbar-collapse" id="navbarTogglerDemo01" >
             <a class="navbar-brand" href="#"><img src={image} height={40} width={40} ></img></a>
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0" >
+            {
+              role == "admin" ? <>
+              <ul class="navbar-nav me-auto mb-2 mb-lg-0" >
+              
               <li class="nav-item">
               <Link to="/home" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">Students</a></Link>
               </li>
@@ -53,6 +59,32 @@ const Navbar = ()=>{
               }
             
             </ul>
+            </> :
+            <>
+               <ul class="navbar-nav me-auto mb-2 mb-lg-0" >
+              
+               <li class="nav-item">
+               <Link to="/addPCr" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">PCR</a></Link>
+               </li>
+               </ul>
+               <ul className="navbar-nav navbar-right">
+               {
+                 token ? <li class="nav-item">
+                 <Link to="/" className="text-decoration-none" onClick={()=>{
+                   console.log("logout")
+                   setToken(null)
+                   localStorage.clear() 
+                   store.dispatch(logout(false))
+                   
+                 }}  ><a class="nav-link active " oaria-current="page" href="#">Logout</a></Link>
+               </li>: <li class="nav-item">
+                 
+               </li>
+               }
+             
+             </ul>
+             </>
+            }
             
           </div>
         </div>

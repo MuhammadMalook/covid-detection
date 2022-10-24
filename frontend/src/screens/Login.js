@@ -4,14 +4,16 @@ import TextField from './TextField'
 import * as Yup from 'yup';
 import image from '../assets/covid_icon.png';
 import {Link} from 'react-router-dom'
-// import '../assets/Login.css'
+import '../assets/Login.css'
 import { useNavigate } from 'react-router-dom';
 import store from '../redux/store';
 import { login, logout } from '../redux/constants';
+import { useSelector } from 'react-redux';
 
 
 function Login() {
   const [api, setApi] = useState(true)
+  const role = useSelector((state)=>state.role)
 
   const checkToken = async() => {
     console.log("checccccckkllk")
@@ -37,7 +39,7 @@ function Login() {
             console.log("heeereree")
             localStorage.clear()
             navigate('/')
-            setToken(null)
+         
    }
    else{
     const jsonData = await response.json()
@@ -46,12 +48,15 @@ function Login() {
     setApi(false)
     if(jsonData.success)
     {
+      if(role == "admin")
         navigate('/home')
+      else
+        navigate('/addPcr')
     }
     else {
         localStorage.clear()
         navigate('/')
-        setToken(null)
+       
 
     }
   }
@@ -102,9 +107,14 @@ setApi(true)
         alert("loged in successfully")
         
         localStorage.setItem("token", JSON.stringify(jsonData.token))
+       
         console.log(localStorage.getItem("token"))
-        store.dispatch(login(true))
-        navigate('/home')
+        store.dispatch(login(values.role))
+        if(values.role == "admin")
+          navigate('/home')
+        else{
+          navigate('/addPcr')
+        }
       }
       else{
         alert("error occured")

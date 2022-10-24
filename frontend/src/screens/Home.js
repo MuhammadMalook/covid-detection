@@ -59,11 +59,11 @@ export default function Home() {
         }
     }
 }
-else{
+    else{
    
     navigate('/')
-}
     }
+}
 
     useEffect(()=>{
        

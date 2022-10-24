@@ -1,9 +1,14 @@
 import reducer from "./reducer";
-import { createStore } from "redux";
+import { createStore,applyMiddleware } from "redux";
+import thunk from "redux-thunk";
+import { composeWithDevTools } from "redux-devtools-extension";
 
-const store = createStore(reducer)
+const store = createStore(reducer,
+    composeWithDevTools(applyMiddleware(thunk))
+ 
+    )
 const unsub = store.subscribe(()=>{
     console.log(store.getState())
 })
 
-export default  store
+export default  store 
