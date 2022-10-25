@@ -39,6 +39,8 @@ function Login() {
             console.log("heeereree")
             localStorage.clear()
             navigate('/')
+            setApi(false)
+            store.dispatch(logout(""))
          
    }
    else{

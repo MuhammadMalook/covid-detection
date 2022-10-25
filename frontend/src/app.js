@@ -19,6 +19,7 @@ import AddPcr from './screens/AddPcr';
 import { login, logout } from './redux/constants';
 import { useSelector } from 'react-redux';
 import store from './redux/store';
+import PcrTest from './screens/PcrTest';
 
 
 
@@ -34,6 +35,10 @@ export default function App() {
     if(jsonData.success)
     {
       store.dispatch(login(jsonData.role))
+    }
+    else{
+      localStorage.clear()
+      
     }
     
     
@@ -56,6 +61,7 @@ export default function App() {
         <Route path='/register' element={<Register/>}/> 
         <Route path='/adduser' element={<AddUser/>}/> 
         <Route path='/temperature' element={<Temperature/>}/> 
+        <Route path='/pcr' element={<PcrTest/>}/> 
         <Route path='/addPcr' element={<AddPcr/>}/> 
 
 

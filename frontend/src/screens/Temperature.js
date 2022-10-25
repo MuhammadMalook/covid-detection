@@ -73,7 +73,7 @@ useEffect(()=>{
                 borderColor: "red",
             }}  size={60} aria-label="Loading Spinner" />
         }
-        { !loading && users.length > 0 ? <div className='container'>
+        <div className='container'>
         
        
       <select  style={{marginBottom:40}}
@@ -83,7 +83,7 @@ useEffect(()=>{
         <option value="students-temp">Students</option>
         <option value="faculty-temp">Faculty</option>
       </select>
-   
+      { !loading && users.length > 0 ? 
 
             <table class="table table-hover align-middle">
                 
@@ -124,14 +124,16 @@ useEffect(()=>{
                     })
                     
                     }
-                </table> 
+                </table> : !loading ? <div style={{display:'flex', justifyContent:'center'}}>No data available</div>: <div></div>
+
+        }
                 {/* <input type={"button"} value={"Add New Student"} className="btn btn-dark mybtn" onClick={()=>{
                             navigate('/adduser')
 
                 }}/> */}
             
-            </div>: !loading ? <div style={{display:'flex', justifyContent:'center'}}>No data available</div>: <div></div>
-        }
+            </div>
+        
      </>
   )
 }

@@ -14,7 +14,7 @@ const Navbar = ()=>{
 
   useEffect(()=>{
      setToken(localStorage.getItem("token"))
-  },[user])
+  },[user,role])
     return(
 
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top" >
@@ -39,7 +39,7 @@ const Navbar = ()=>{
 
               </li>
               <li class="nav-item">
-                <Link to="#" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">PCR</a></Link>
+                <Link to="/pcr" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">PCR</a></Link>
               </li> 
              
             </ul>
