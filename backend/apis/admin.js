@@ -135,14 +135,16 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
 }
 )
 
-  app.post("/students-temp",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
-   
+  app.post("/add-temp",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+   console.log(process.env.EMAIL)
     const {TAGID, BodyTemp} = req.body
+   
     console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
     const Test_Date = new Date().toLocaleDateString()
     const Test_Time = new Date().toLocaleTimeString()
-    const post = {BodyTemp, Test_Date, Test_Time, TAGID}
-    if(!TAGID || !BodyTemp || !Test_Date || !Test_Time)
+    const PcrStatus = "pending"
+    const post = {BodyTemp, Test_Date, Test_Time, TAGID, PcrStatus}
+    if(!TAGID || !BodyTemp || !Test_Date || !Test_Time || !PcrStatus)
         return res.status(400).json({success:false, message:"Please enter complete data"})
     connection.con.query('INSERT INTO temperature SET ?', post,
     function(error,results, fields){
@@ -150,14 +152,15 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
        
         if(BodyTemp > 38)
         {
+
             // Initialize the Authentication of Gmail Options
                 var transportar = Mailer.createTransport({
                     host: 'smtp.gmail.com',
                     port: 587,
                     secure: false,
                 auth: {
-                    user: "mcza445@gmail.com",
-                    pass: "wldkyqjvazwlmhjw"
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD
                 },
                 tls:{
                     rejectUnAuthorized:false
@@ -166,10 +169,10 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
 
                 // Deifne mailing options like Sender Email and Receiver.
                 var mailOptions = {
-                from: "mcza445@gmail.com", // Sender ID
-                to: "maharmohammadmalook@gmail.com", // Reciever ID
+                from: process.env.EMAIL, // Sender ID
+                to: process.env.EMAIL, // Reciever ID
                 subject: "pcr test", // Mail Subject
-                html: "<p>Please do your pcr test within 48 hours</p>", // Description
+                html: "<p>Please do your pcr test within 48 hours: You have high temperature</p>", // Description
                 };
 
                 // Send an Email
@@ -185,6 +188,10 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
     }) 
   }      
   )
+
+
+  
+
 
 app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
@@ -258,6 +265,87 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
     //console.log(payload)
    
   })
+
+
+  app.get('/students-pcr',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+    
+    console.log("student-pcr")
+    connection.con.query("SELECT name, email, college, TAGID, pcrResult, Test_Status from student join pcrtest using(TAGID)", function(error, results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+        if(results.length > 0)
+        return res.status(200).json({success:true, data:results})
+        else
+        return res.status(200).json({success:true,data:[], message:"no record found"})
+
+    })
+  })
+
+  app.get('/faculty-pcr',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+    
+    console.log("student-pcr")
+    connection.con.query("SELECT name, email, college, TAGID, pcrResult, Test_Status from faculty join pcrtest using(TAGID)", function(error, results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+        if(results.length > 0)
+        return res.status(200).json({success:true, data:results})
+        else
+        return res.status(200).json({success:true,data:[], message:"no record found"})
+
+    })
+  })
+
+
+  app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+   
+    const {TAGID, pcrResult} = req.body
+    console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
+    const Test_Date = new Date().toLocaleDateString()
+    const Test_Time = new Date().toLocaleTimeString()
+    const Test_Status = "pending"
+    const post = {pcrResult,Test_Status, TAGID}
+    if(!TAGID || !Test_Status || !pcrResult )
+        return res.status(400).json({success:false, message:"Please enter complete data"})
+    connection.con.query('INSERT INTO pcrtest SET ?', post,
+    function(error,results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+       
+        if(pcrResult  == 1)
+        {
+            // Initialize the Authentication of Gmail Options
+                var transportar = Mailer.createTransport({
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false,
+                auth: {
+                    user: "mcza445@gmail.com",
+                    pass: "wldkyqjvazwlmhjw"
+                },
+                tls:{
+                    rejectUnAuthorized:false
+                }
+                });
+
+                // Deifne mailing options like Sender Email and Receiver.
+                var mailOptions = {
+                from: "mcza445@gmail.com", // Sender ID
+                to: "maharmohammadmalook@gmail.com", // Reciever ID
+                subject: "pcr test", // Mail Subject
+                html: "<p>Please do your pcr test within 48 hours</p>", // Description
+                };
+
+                // Send an Email
+                transportar.sendMail(mailOptions, (error, info) => {
+                if (error) console.log(error);
+                console.log(info);
+                });
+        }
+        else{
+            console.log("PCR Test is normal")
+        }
+        return res.status(200).json({success:true, data:results})
+    }) 
+  }      
+  )  
+  
 
 
 module.exports = app
