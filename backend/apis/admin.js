@@ -2,6 +2,7 @@ const express = require('express')
 const app = express.Router()
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+var Mailer = require("nodemailer");
 
 const passport = require('passport')
 require('./userAuth')(passport)
@@ -16,6 +17,12 @@ app.use(passport.initialize());
 
 const connection = require('../server')
 
+
+app.get('/sendEmail',async(req,res)=>{
+
+
+
+})
 
 app.get('/check', passport.authenticate('adminAuth',{ session: false }), (req,res)=>{
     console.log("heree")
@@ -141,6 +148,39 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
     function(error,results, fields){
         if(error) return res.status(400).json({success:false,message:error})
        
+        if(BodyTemp > 38)
+        {
+            // Initialize the Authentication of Gmail Options
+                var transportar = Mailer.createTransport({
+                    host: 'smtp.gmail.com',
+                    port: 587,
+                    secure: false,
+                auth: {
+                    user: "mcza445@gmail.com",
+                    pass: "wldkyqjvazwlmhjw"
+                },
+                tls:{
+                    rejectUnAuthorized:false
+                }
+                });
+
+                // Deifne mailing options like Sender Email and Receiver.
+                var mailOptions = {
+                from: "mcza445@gmail.com", // Sender ID
+                to: "maharmohammadmalook@gmail.com", // Reciever ID
+                subject: "pcr test", // Mail Subject
+                html: "<p>Please do your pcr test within 48 hours</p>", // Description
+                };
+
+                // Send an Email
+                transportar.sendMail(mailOptions, (error, info) => {
+                if (error) console.log(error);
+                console.log(info);
+                });
+        }
+        else{
+            console.log("body temperature normal")
+        }
         return res.status(200).json({success:true, data:results})
     }) 
   }      
