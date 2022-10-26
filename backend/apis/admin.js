@@ -143,6 +143,11 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
     const Test_Date = new Date().toLocaleDateString()
     const Test_Time = new Date().toLocaleTimeString()
     const PcrStatus = "pending"
+    if(BodyTemp > 38)
+        PcrStatus = "pending"
+    else{
+        PcrStatus = "normal"
+    }    
     const post = {BodyTemp, Test_Date, Test_Time, TAGID, PcrStatus}
     if(!TAGID || !BodyTemp || !Test_Date || !Test_Time || !PcrStatus)
         return res.status(400).json({success:false, message:"Please enter complete data"})
@@ -196,7 +201,7 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
 app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
     console.log("after verify")
-    connection.con.query("SELECT name, email, college, TAGID, BodyTemp  from student join temperature using(TAGID)", function(error, results, fields){
+    connection.con.query("SELECT name, email, college, TAGID, BodyTemp, Test_Date, Test_Time,PcrStatus from student join temperature using(TAGID)", function(error, results, fields){
         if(error) return res.status(400).json({success:false,message:error})
         if(results.length > 0)
         return res.status(200).json({success:true, data:results})
@@ -209,7 +214,7 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
   app.get('/faculty-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
     console.log("after verify")
-    connection.con.query("SELECT name, email, college, TAGID, BodyTemp  from faculty join temperature using(TAGID)", function(error, results, fields){
+    connection.con.query("SELECT name, email, college, TAGID, BodyTemp,Test_Date, Test_Time,PcrStatus  from faculty join temperature using(TAGID)", function(error, results, fields){
         if(error) return res.status(400).json({success:false,message:error})
         if(results.length > 0)
         return res.status(200).json({success:true, data:results})
@@ -300,7 +305,11 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
     console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
     const Test_Date = new Date().toLocaleDateString()
     const Test_Time = new Date().toLocaleTimeString()
-    const Test_Status = "pending"
+    const Test_Status ="normal"
+    if(pcrResult == 1)
+         Test_Status = "Positive"
+    else 
+        Test_Status = "Negative"    
     const post = {pcrResult,Test_Status, TAGID}
     if(!TAGID || !Test_Status || !pcrResult )
         return res.status(400).json({success:false, message:"Please enter complete data"})
@@ -347,5 +356,51 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
   )  
   
 
+
+app.get("/getMyPcr/:token/:role",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+    const {token, role} = req.params
+    console.log(role)
+    try{
+
+        payload = jwt.verify(JSON.parse(token), JWT_SECRET)
+        console.log(payload)
+        connection.con.query(`SELECT TAGID from ${role} where email='${payload.email}'`, function(error, results, fields){
+            if(error) return res.status(400).json({success:false,message:error})
+            console.log(results[0].TAGID)
+            if(results.length > 0)
+            {
+                connection.con.query(`SELECT PcrStatus from temperature where TAGID='${results[0].TAGID}'`, function(error, results, fields){
+                    if(error) return res.status(400).json({success:false,message:error})
+                    console.log(results.length-1)
+                    if(results.length > 0){
+                    if(results[results.length-1].PcrStatus == "pending")
+                        return res.status(200).json({success:true, data:true, msg:"Your PcrTest is pending"})
+                    else
+                    {
+                        return res.status(200).json({success:true, data:false, msg:"you don't have pending PcrTest"})
+                    }
+                    }
+                    else{
+                        return res.status(400).json({success:true, data:false, msg:"You don't have any entry for temperature"})
+                    }
+                })
+            }
+            else{
+                return res.status(400).json({success:false, msg:"no record found"})
+            }
+        })
+
+    }
+    catch(e){
+        if (e instanceof jwt.JsonWebTokenError) {
+            // if the error thrown is because the JWT is unauthorized, return a 401 error
+            return res.status(401).json({success:false, msg:e})
+          }
+          // otherwise, return a bad request error
+          return res.status(400).json({success:false, msg:'wrong token'})
+    }
+    
+      
+})
 
 module.exports = app
