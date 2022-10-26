@@ -85,7 +85,7 @@ useEffect(()=>{
         <option value="faculty-pcr">Faculty</option>
       </select>
             { !loading && users.length > 0 ? 
-
+            <div style={{overflow:'auto'}}>
             <table class="table table-hover align-middle">
                 
                 <thead>
@@ -126,7 +126,7 @@ useEffect(()=>{
                     })
                     
                     }
-                </table> :!loading ? <div style={{display:'flex', justifyContent:'center'}}>No data available</div>: <div></div>
+                </table> </div> :!loading ? <div style={{display:'flex', justifyContent:'center'}}>No data available</div>: <div></div>
         }
                 {/* <input type={"button"} value={"Add New Student"} className="btn btn-dark mybtn" onClick={()=>{
                             navigate('/adduser')

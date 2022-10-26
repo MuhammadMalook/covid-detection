@@ -32,6 +32,7 @@ export default function App() {
     })
     const jsonData = await response.json()
     console.log(jsonData, "json")
+    console.log("App.js")
     if(jsonData.success)
     {
       store.dispatch(login(jsonData.role))

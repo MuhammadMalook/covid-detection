@@ -73,7 +73,7 @@ useEffect(()=>{
                 borderColor: "red",
             }}  size={60} aria-label="Loading Spinner" />
         }
-        <div className='container'>
+        <div className='container' >
         
        
       <select  style={{marginBottom:40}}
@@ -84,8 +84,8 @@ useEffect(()=>{
         <option value="faculty-temp">Faculty</option>
       </select>
       { !loading && users.length > 0 ? 
-
-            <table class="table table-hover align-middle">
+            <div style={{overflow:'auto'}}>
+            <table class="table table-hover align-middle" >
                 
                 <thead>
                         <tr>
@@ -97,6 +97,8 @@ useEffect(()=>{
                         <th scope="col">BodyTemp(°C)</th>
                         <th scope="col">Test_Date</th>
                         <th scope="col">Test_Time</th>
+                        <th scope="col">Pcr STatus</th>
+
 
 
 
@@ -116,7 +118,9 @@ useEffect(()=>{
                                         <td>{user.college}</td> 
                                         <td>{user.BodyTemp}</td>   
                                         <td>{user.Test_Date}</td>   
-                                        <td>{user.Test_Time}</td>   
+                                        <td>{user.Test_Time}</td>  
+                                        <td>{user.PcrStatus}</td>   
+
 
 
                                     </tr>
@@ -124,7 +128,7 @@ useEffect(()=>{
                     })
                     
                     }
-                </table> : !loading ? <div style={{display:'flex', justifyContent:'center'}}>No data available</div>: <div></div>
+                </table> </div> : !loading ? <div style={{display:'flex', justifyContent:'center'}}>No data available</div>: <div></div>
 
         }
                 {/* <input type={"button"} value={"Add New Student"} className="btn btn-dark mybtn" onClick={()=>{

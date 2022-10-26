@@ -82,7 +82,7 @@ else{
             borderColor: "red",
           }}  size={60} aria-label="Loading Spinner" />
     }
- { !loading && users.length > 0 ? <div className='container'>
+ { !loading && users.length > 0 ? <div className='container' style={{overflow:'auto'}}>
    
 
      <table class="table table-hover align-middle">

@@ -82,9 +82,9 @@ export default function Home() {
             borderColor: "red",
           }}  size={60} aria-label="Loading Spinner" />
     }
- { !loading && users.length > 0 ? <div className='container'>
+ { !loading && users.length > 0 ? <div className='container' >
    <div className='row'>
-        <div className='col-md-12 col-sm-12'>
+<div className='col-md-12 col-sm-12 ' style={{overflow:'auto'}}>
 
      <table class="table table-hover align-middle">
          

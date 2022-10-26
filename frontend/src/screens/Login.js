@@ -14,16 +14,43 @@ import { useSelector } from 'react-redux';
 function Login() {
   const [api, setApi] = useState(true)
   const role = useSelector((state)=>state.role)
+  const [checkRoll, setRoll] = useState("")
 
-  const checkToken = async() => {
-    console.log("checccccckkllk")
+
+  const checkAdmin = async(token)=>{
+    
+    const response = await fetch(`/checkAdmin/${token}`, {
+      method:"GET"
+    })
+   
+    const jsonData = await response.json()
+    if(jsonData.success)
+    {
+ 
+
+      store.dispatch(login(jsonData.role))
+      setRoll(jsonData.role)
+    }
+    else{
+      localStorage.clear()
+      store.dispatch(logout(""))
+      
+    }
+    return jsonData.role;
+    
+
+    
+  }
+
+  const checkToken = async(checkroll) => {
+    
     setApi(false)
     var token =  localStorage.getItem('token')
     
    if(token){
-    console.log(token)
+ 
     var auth = "Bearer ".concat(JSON.parse(token))
-    console.log(auth)
+   
 
     const response = await fetch('/check', {
         method:"GET",
@@ -33,10 +60,10 @@ function Login() {
             "Authorization": auth,
         },
     })
-    console.log(response)
+  
    if(response.statusText == "Unauthorized")
    {
-            console.log("heeereree")
+            
             localStorage.clear()
             navigate('/')
             setApi(false)
@@ -45,15 +72,20 @@ function Login() {
    }
    else{
     const jsonData = await response.json()
-    console.log(jsonData)
-    console.log(jsonData,"jsonDAta")
+
     setApi(false)
     if(jsonData.success)
     {
-      if(role == "admin")
+      
+      
+        if(checkroll == "admin")
         navigate('/home')
-      else
+      else{
+        
         navigate('/addPcr')
+      }
+     
+     
     }
     else {
         localStorage.clear()
@@ -68,8 +100,9 @@ function Login() {
   }
 }
   useEffect(()=>{
-    
-    checkToken()
+    const token = localStorage.getItem("token")
+    checkAdmin(token).then((res)=>checkToken(res)).catch(()=>console.log(error))
+   
   },[])
 
   const navigate  = useNavigate()
@@ -94,7 +127,7 @@ function Login() {
     validationSchema={validate}
     onSubmit={async(values) => {
       const body = {email:values.email, password:values.password, role:values.role }
-      console.log(values)
+   
       const response = await fetch('/login', {
         method:"POST",
         headers:{
@@ -103,14 +136,13 @@ function Login() {
         body: JSON.stringify(body)
       })
       const jsonData = await response.json()
-      console.log(jsonData, "datatatatatat")
+    
       if(jsonData.success)
       {
         alert("loged in successfully")
         
         localStorage.setItem("token", JSON.stringify(jsonData.token))
        
-        console.log(localStorage.getItem("token"))
         store.dispatch(login(values.role))
         if(values.role == "admin")
           navigate('/home')
