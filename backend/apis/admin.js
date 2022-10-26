@@ -142,7 +142,7 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
     console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
     const Test_Date = new Date().toLocaleDateString()
     const Test_Time = new Date().toLocaleTimeString()
-    const PcrStatus = "pending"
+    let PcrStatus = "pending"
     if(BodyTemp > 38)
         PcrStatus = "pending"
     else{
@@ -301,57 +301,80 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
 
   app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    
-    const {TAGID, pcrResult} = req.body
+    const {token, pcrResult, role} = req.body
     console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
     const Test_Date = new Date().toLocaleDateString()
     const Test_Time = new Date().toLocaleTimeString()
-    const Test_Status ="normal"
+    let Test_Status ="normal"
     if(pcrResult == 1)
          Test_Status = "Positive"
     else 
         Test_Status = "Negative"    
-    const post = {pcrResult,Test_Status, TAGID}
-    if(!TAGID || !Test_Status || !pcrResult )
+    
+    if(!token || !Test_Status || !pcrResult )
         return res.status(400).json({success:false, message:"Please enter complete data"})
-    connection.con.query('INSERT INTO pcrtest SET ?', post,
-    function(error,results, fields){
+     
+    payload = jwt.verify(JSON.parse(token), JWT_SECRET)   
+
+    connection.con.query(`SELECT TAGID from ${role} where email='${payload.email}'`, function(error, results, fields){
         if(error) return res.status(400).json({success:false,message:error})
-       
-        if(pcrResult  == 1)
+        if(results.length > 0)
         {
-            // Initialize the Authentication of Gmail Options
-                var transportar = Mailer.createTransport({
-                    host: 'smtp.gmail.com',
-                    port: 587,
-                    secure: false,
-                auth: {
-                    user: "mcza445@gmail.com",
-                    pass: "wldkyqjvazwlmhjw"
-                },
-                tls:{
-                    rejectUnAuthorized:false
-                }
-                });
-
-                // Deifne mailing options like Sender Email and Receiver.
-                var mailOptions = {
-                from: "mcza445@gmail.com", // Sender ID
-                to: "maharmohammadmalook@gmail.com", // Reciever ID
-                subject: "pcr test", // Mail Subject
-                html: "<p>Please do your pcr test within 48 hours</p>", // Description
-                };
-
-                // Send an Email
-                transportar.sendMail(mailOptions, (error, info) => {
-                if (error) console.log(error);
-                console.log(info);
-                });
+            const TAGID = results[0].TAGID
+            const post = {pcrResult,Test_Status, TAGID}
+            connection.con.query('INSERT INTO pcrtest SET ?', post,
+            function(error,results, fields){
+                if(error) return res.status(400).json({success:false,message:error})
+                connection.con.query('UPDATE temperature SET PcrStatus = ? WHERE TAGID = ?', [Test_Status, TAGID], function(error,results,fields){
+                            if(error) return res.status(400).json({success:false,message:error})
+                            if(pcrResult  == 1)
+                            {
+                                // Initialize the Authentication of Gmail Options
+                                    var transportar = Mailer.createTransport({
+                                        host: 'smtp.gmail.com',
+                                        port: 587,
+                                        secure: false,
+                                    auth: {
+                                        user: process.env.EMAIL,
+                                        pass: process.env.PASSWORD
+                                    },
+                                    tls:{
+                                        rejectUnAuthorized:false
+                                    }
+                                    });
+                                    var maillist = [
+                                        'maharmohammadmalook@gmail.com',
+                                        'mcza445@gmail.com',
+                                    ]
+                    
+                                    // Deifne mailing options like Sender Email and Receiver.
+                                    var mailOptions = {
+                                    from: process.env.EMAIL, // Sender ID
+                                    to: maillist, // Reciever ID
+                                    subject: "pcr test", // Mail Subject
+                                    html: "<p>Please do your pcr test within 48 hours because You were with someone who have positive PCR</p>", // Description
+                                    };
+                    
+                                    // Send an Email
+                                    transportar.sendMail(mailOptions, (error, info) => {
+                                    if (error) console.log(error);
+                                    console.log(info);
+                                    });
+                            }
+                            else{
+                                console.log("PCR Test is normal")
+                            }
+                            return res.status(200).json({success:true, msg:"updated"})
+                        })
+            
+            
+                
+            })
         }
         else{
-            console.log("PCR Test is normal")
-        }
-        return res.status(200).json({success:true, data:results})
-    }) 
+            return res.status(200).json({success:true, data:[], msg:"no record found"})
+            }
+    })
   }      
   )  
   
