@@ -127,7 +127,7 @@ useEffect(()=>{
                          <input type={"button"} className="btn btn-primary btn-lg mt-4" value={"Submit"} onClick={async()=>{
                             console.log(pcr)
                             var token =  localStorage.getItem('token')
-                            const body = {pcrResult:pcr,TAGID:"tag4324dfrr"}
+                            const body = {pcrResult:pcr,token, role}
                             if(token)
                             {
                                 console.log(token)

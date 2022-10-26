@@ -95,7 +95,6 @@ useEffect(()=>{
                         <th scope="col">FullName</th>
                         <th scope="col">Email</th>
                         <th scope="col">College</th>
-                        <th scope="col">BodyTemp(°C)</th>
                         <th scope="col">PCR Result</th>
                       
 
@@ -116,7 +115,6 @@ useEffect(()=>{
                                         <td>{user.name}</td>
                                         <td>{user.email}</td> 
                                         <td>{user.college}</td> 
-                                        <td>{user.BodyTemp}</td>   
                                         <td>{user.pcrResult}</td>   
                                          
 
