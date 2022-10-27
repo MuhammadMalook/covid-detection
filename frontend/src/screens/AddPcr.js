@@ -13,6 +13,8 @@ export default function AddPcr() {
     const role = useSelector((state)=>state.role)
     const token = localStorage.getItem('token')
     const [msg, setMsg] = useState("no data available")
+    const [date, setDate] = useState()
+    const [TAGID, setTAGID] = useState()
 
     const navigate = useNavigate()
 
@@ -53,7 +55,12 @@ export default function AddPcr() {
         {
             setMsg(jsonData.msg)
             if(jsonData.data)
+            {
                 setPending(true)
+                setDate(jsonData.data.Test_Date)
+                setTAGID(jsonData.data.TAGID)
+
+            }
             else
                 setPending(false)
 
@@ -121,13 +128,13 @@ useEffect(()=>{
                                 <input type="radio" name="pcr" value="1"  onChange={handleChange}/>
                                 1
                             </label>
-                           
+                            {date}
                             
                         </div>
                          <input type={"button"} className="btn btn-primary btn-lg mt-4" value={"Submit"} onClick={async()=>{
                             console.log(pcr)
                             var token =  localStorage.getItem('token')
-                            const body = {pcrResult:pcr,token, role}
+                            const body = {pcrResult:pcr,token, role, date}
                             if(token)
                             {
                                 console.log(token)
