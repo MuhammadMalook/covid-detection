@@ -19,14 +19,55 @@ const connection = require('../server')
 
 
 app.get('/sendEmail',async(req,res)=>{
+    const {date, TAGID} = req.body
+    console.log(date)
+   
+    connection.con.query(`SELECT TAGID from temperature WHERE Test_Date='${date}' AND TAGID!='${TAGID}'` , function (error, results, fields) {
+        if (error) return res.status(400).json({error:error}) 
+        let result = Object.values(JSON.parse(JSON.stringify(results)));
+        const arr = []
+        result.forEach((v) => arr.push(v.TAGID));
+        for(var i=0; i<result.length; i++){
+            arr[i] = "'" + arr[i] + "'";
+        }
+        var list_with_quotes = arr.join(",");
+        console.log(list_with_quotes)
+        // console.log(((JSON.parse(JSON.stringify(results)))))
+        if(results.length > 0){
+        connection.con.query(`SELECT email,TAGID from student WHERE TAGID IN (${list_with_quotes}) UNION SELECT email, TAGID from faculty WHERE TAGID IN (${list_with_quotes}) `, function (error, results, fields) {
+            if (error) return res.status(400).json({error:error}) 
+            
+            let result = Object.values(JSON.parse(JSON.stringify(results)));
+            const arr = []
 
+            result.forEach((v) => arr.push(v.email));
+            console.log(arr)
+            return res.status(200).json({data:results}) //working here to check if IN operator works
+        })
+        }
+        else{
+
+            return res.status(200).json({data:results})
+        }
+       
+
+        
+    }
+    )
 
 
 })
+//WHERE Test_Date = '${date}'
+
+// app.post('sendEmails', (req,res)=>{{
+
+// }})
 
 app.get('/check', passport.authenticate('adminAuth',{ session: false }), (req,res)=>{
     console.log("heree")
+    console.log(new Date().toLocaleDateString("en-CA"))
     return res.status(200).json({success:true, msg:"logged in"})
+
 })
 
 app.post('/login', async(req, res)=>{
@@ -139,9 +180,10 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
    console.log(process.env.EMAIL)
     const {TAGID, BodyTemp} = req.body
    
-    console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
-    const Test_Date = new Date().toLocaleDateString()
+    console.log(new Date().toLocaleDateString("en-CA"), " Time", new Date().toLocaleTimeString())
+    const Test_Date =  new Date().toLocaleDateString("en-CA")
     const Test_Time = new Date().toLocaleTimeString()
+    console.log(Test_Date, Test_Time)
     let PcrStatus = "pending"
     if(BodyTemp > 38)
         PcrStatus = "pending"
@@ -158,7 +200,10 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
         if(BodyTemp > 38)
         {
 
+            connection.con.query(`SELECT email from student WHERE TAGID = '${TAGID}' UNION SELECT email from faculty WHERE TAGID = '${TAGID}'`, function (error, results, fields) {
+                if (error) return res.status(400).json({error:error}) 
             // Initialize the Authentication of Gmail Options
+                const email = results[0].email
                 var transportar = Mailer.createTransport({
                     host: 'smtp.gmail.com',
                     port: 587,
@@ -175,7 +220,7 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
                 // Deifne mailing options like Sender Email and Receiver.
                 var mailOptions = {
                 from: process.env.EMAIL, // Sender ID
-                to: process.env.EMAIL, // Reciever ID
+                to: email, // Reciever ID
                 subject: "pcr test", // Mail Subject
                 html: "<p>Please do your pcr test within 48 hours: You have high temperature</p>", // Description
                 };
@@ -185,6 +230,7 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
                 if (error) console.log(error);
                 console.log(info);
                 });
+            })
         }
         else{
             console.log("body temperature normal")
@@ -301,10 +347,10 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
 
   app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    
-    const {token, pcrResult, role} = req.body
-    console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
-    const Test_Date = new Date().toLocaleDateString()
-    const Test_Time = new Date().toLocaleTimeString()
+    const {token, pcrResult, role, date} = req.body
+    // console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
+    // const Test_Date = new Date().toLocaleDateString()
+    // const Test_Time = new Date().toLocaleTimeString()
     let Test_Status ="normal"
     if(pcrResult == 1)
          Test_Status = "Positive"
@@ -329,37 +375,66 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
                             if(error) return res.status(400).json({success:false,message:error})
                             if(pcrResult  == 1)
                             {
-                                // Initialize the Authentication of Gmail Options
-                                    var transportar = Mailer.createTransport({
-                                        host: 'smtp.gmail.com',
-                                        port: 587,
-                                        secure: false,
-                                    auth: {
-                                        user: process.env.EMAIL,
-                                        pass: process.env.PASSWORD
-                                    },
-                                    tls:{
-                                        rejectUnAuthorized:false
+                                connection.con.query(`SELECT TAGID from temperature WHERE Test_Date='${date}' AND TAGID!='${TAGID}'` , function (error, results, fields) {
+                                    if (error) return res.status(400).json({error:error}) ;
+                                    let result = Object.values(JSON.parse(JSON.stringify(results)));
+                                    const arr = []
+                                    result.forEach((v) => arr.push(v.TAGID));
+                                    for(var i=0; i<result.length; i++){
+                                        arr[i] = "'" + arr[i] + "'";
                                     }
-                                    });
-                                    var maillist = [
-                                        'maharmohammadmalook@gmail.com',
-                                        'mcza445@gmail.com',
-                                    ]
-                    
-                                    // Deifne mailing options like Sender Email and Receiver.
-                                    var mailOptions = {
-                                    from: process.env.EMAIL, // Sender ID
-                                    to: maillist, // Reciever ID
-                                    subject: "pcr test", // Mail Subject
-                                    html: "<p>Please do your pcr test within 48 hours because You were with someone who have positive PCR</p>", // Description
-                                    };
-                    
-                                    // Send an Email
-                                    transportar.sendMail(mailOptions, (error, info) => {
-                                    if (error) console.log(error);
-                                    console.log(info);
-                                    });
+                                    var list_with_quotes = arr.join(",");
+                                    console.log(list_with_quotes)
+                                
+                                    if(results.length > 0){
+                                            // connection.con.query('SELECT')
+                                            connection.con.query(`SELECT email,TAGID from student WHERE TAGID IN (${list_with_quotes}) UNION SELECT email, TAGID from faculty WHERE TAGID IN (${list_with_quotes}) `, function (error, results, fields) {
+                                                if (error) return res.status(400).json({error:error}) 
+                                                
+                                                let result = Object.values(JSON.parse(JSON.stringify(results)));
+                                                const mailList = []
+                                    
+                                                result.forEach((v) => mailList.push(v.email));
+                                                console.log(mailList)
+                                                     // Initialize the Authentication of Gmail Options
+                                                                var transportar = Mailer.createTransport({
+                                                                    host: 'smtp.gmail.com',
+                                                                    port: 587,
+                                                                    secure: false,
+                                                                auth: {
+                                                                    user: process.env.EMAIL,
+                                                                    pass: process.env.PASSWORD
+                                                                },
+                                                                tls:{
+                                                                    rejectUnAuthorized:false
+                                                                }
+                                                                });
+                                                                
+                                                
+                                                                // Deifne mailing options like Sender Email and Receiver.
+                                                                var mailOptions = {
+                                                                from: process.env.EMAIL, // Sender ID
+                                                                to: mailList, // Reciever ID
+                                                                subject: "pcr test", // Mail Subject
+                                                                html: "<p>Please do your pcr test within 48 hours because You were with someone who have positive PCR</p>", // Description
+                                                                };
+                                                
+                                                                // Send an Email
+                                                                transportar.sendMail(mailOptions, (error, info) => {
+                                                                if (error) console.log(error);
+                                                                console.log(info);
+                                                                });
+
+                                               // return res.status(200).json({data:results}) //working here to check if IN operator works
+                                            })
+                                    }
+                                    else{
+                                        return res.status(200).json({success:true, data:[], msg:"no found any person with same date"})
+                                    }
+                                    
+                                }
+                                )
+                                
                             }
                             else{
                                 console.log("PCR Test is normal")
@@ -392,12 +467,14 @@ app.get("/getMyPcr/:token/:role",passport.authenticate('adminAuth', {session:fal
             console.log(results[0].TAGID)
             if(results.length > 0)
             {
-                connection.con.query(`SELECT PcrStatus from temperature where TAGID='${results[0].TAGID}'`, function(error, results, fields){
+                connection.con.query(`SELECT TAGID, PcrStatus, DATE_FORMAT(Test_Date,\'%Y-%m-%d\') as Test_Date from temperature where TAGID='${results[0].TAGID}'`, function(error, results, fields){
                     if(error) return res.status(400).json({success:false,message:error})
                     console.log(results.length-1)
                     if(results.length > 0){
+                        const response = results[results.length-1]
+                        console.log(response)
                     if(results[results.length-1].PcrStatus == "pending")
-                        return res.status(200).json({success:true, data:true, msg:"Your PcrTest is pending"})
+                        return res.status(200).json({success:true, data:response, msg:"Your PcrTest is pending"})
                     else
                     {
                         return res.status(200).json({success:true, data:false, msg:"you don't have pending PcrTest"})
