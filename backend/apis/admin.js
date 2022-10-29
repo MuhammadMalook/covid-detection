@@ -3,6 +3,8 @@ const app = express.Router()
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 var Mailer = require("nodemailer");
+const multer = require("multer");
+const fs = require('fs')
 
 const passport = require('passport')
 require('./userAuth')(passport)
@@ -11,11 +13,42 @@ const JWT_SECRET = process.env.JWT_SECRET
 
 
 
+
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      console.log("heloooooo")
+      cb(null, "./uploads");
+    },
+    filename: (req, file, cb) => {
+      console.log(file,"fileeeeeeeeeee")
+      cb(null, file.originalname);
+    },
+  });
+
+  const upload = multer({ storage: storage });
+
 //const upload = require('express-fileupload')
 
 app.use(passport.initialize());
 
 const connection = require('../server')
+
+
+
+app.post('/storeImg', upload.single("imageUrl"), async(req,res)=>{
+    if (!req.file) {
+        console.log("No file upload");
+    } else {
+        console.log(req.file.filename)
+        var imgsrc = req.file.filename
+        var insertData = "INSERT INTO requests(TAGID,imageSrc) VALUES(?,?)"
+        connection.con.query(insertData, ["tag4324dfrr",imgsrc], (err, result) => {
+            if (err) throw err
+            console.log("file uploaded")
+        })
+    }
+})
 
 
 app.get('/sendEmail',async(req,res)=>{
