@@ -16,6 +16,9 @@ export default function AddPcr() {
     const [date, setDate] = useState()
     const [TAGID, setTAGID] = useState()
 
+    const [image, setImage] = useState()
+    const [imgPath, setImgPath] = useState()
+
     const navigate = useNavigate()
 
     const checkToken = async() => {
@@ -88,6 +91,13 @@ export default function AddPcr() {
         setPcr(e.target.value)
   }  
 
+  const imgFilehandler = (e) => {
+    if (e.target.files.length !== 0) {
+    setImgPath(e.target.files[0])
+      setImage(URL.createObjectURL(e.target.files[0]))
+    }
+  }
+
 useEffect(()=>{
         checkToken()
         return () => {
@@ -115,9 +125,18 @@ useEffect(()=>{
                 </div>
                 <div className='row'>
                     <div className='col-md-4 col-sm-2'>
-
+                    
                     </div>
                     <div className='col-md-4 col-sm-8'>
+                    <input style={{margin:20}}
+                        className={'form-control shadow-none'}
+                        // name = "imageUrl"
+                        type={'file'}
+                        autoComplete="off"
+                        //onChange={(event)=>setImageUrl(event.target.files[0])}
+                        onChange={imgFilehandler} 
+                    />
+                    <img src={image} alt='' width={400} height={300}></img>
                      <h4>Please select your PCR result</h4>   
                     <div role="group" aria-labelledby="my-radio-group" style={{display:'flex',justifyContent:'space-evenly', alignContent:'center', marginTop:30}}>
                             <label>
@@ -134,20 +153,26 @@ useEffect(()=>{
                          <input type={"button"} className="btn btn-primary btn-lg mt-4" value={"Submit"} onClick={async()=>{
                             console.log(pcr)
                             var token =  localStorage.getItem('token')
-                            const body = {pcrResult:pcr,token, role, date}
+                            let data = new FormData()
+                            data.append("pcrResult", pcr)
+                            data.append("token", token)
+                            data.append("role", role)
+                            data.append("date", date)
+                            data.append("image", imgPath)
+                         
+                      
+                            //const body = {pcrResult:pcr,token, role, date, image:imgPath}
                             if(token)
                             {
                                 console.log(token)
                                 var auth = "Bearer ".concat(JSON.parse(token))
                                 console.log(auth)
-                                const response = await fetch('/add-pcr', {
+                                const response = await fetch('/addRequest', {
                                     method:"POST",
                                     headers:{
-                                        Accept: 'application/json',
-                                        'Content-Type': 'application/json',
                                         "Authorization": auth,
                                     },
-                                    body: JSON.stringify(body)
+                                    body: data
                                 })
 
                                 console.log(response)

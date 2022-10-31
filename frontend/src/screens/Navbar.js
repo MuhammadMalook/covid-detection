@@ -41,6 +41,9 @@ const Navbar = ()=>{
               <li class="nav-item">
                 <Link to="/pcr" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">PCR</a></Link>
               </li> 
+              <li class="nav-item">
+                <Link to="/requests" className="text-decoration-none"><a class="nav-link active " aria-current="page" href="#">Requests</a></Link>
+              </li> 
              
             </ul>
             <ul className="navbar-nav navbar-right">
