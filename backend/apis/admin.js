@@ -377,10 +377,49 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
     })
   })
 
+  app.post('/addRequest',upload.single("image"),passport.authenticate('adminAuth', {session:false}), async(req,res)=>{
+    const image=req.file.filename
+    const {token, pcrResult, role, date} = req.body
+    //const post = {token, pcrResult, role, date, image}
+    console.log(req.body)
+    let Test_Status ="normal"
+    if(pcrResult == 1)
+         Test_Status = "Positive"
+    else 
+        Test_Status = "Negative"    
+    
+    if(!token || !Test_Status || !pcrResult || !image)
+        return res.status(400).json({success:false, message:"Please enter complete data"})
+    try { 
+    payload = jwt.verify(JSON.parse(token), JWT_SECRET)   
+    connection.con.query(`SELECT TAGID from ${role} where email='${payload.email}'`, function(error, results, fields){
+        if(error) return res.status(400).json({success:false,message:error})
+        if(results.length > 0)
+        {
+            const TAGID = results[0].TAGID
+            const post = {pcrResult,Test_Status, TAGID, imageSrc:image, role, Test_Date:date}
+            connection.con.query('INSERT INTO requests SET ?', post, function(error,results, fields){
+                if(error) return res.status(400).json({success:false,message:error})
+                return res.status(200).json({success:true, msg:"request sent"})
+            })
+        }
+    }) 
+    }
+    catch(e){
+        if (e instanceof jwt.JsonWebTokenError) {
+            // if the error thrown is because the JWT is unauthorized, return a 401 error
+            return res.status(401).json({success:false, msg:e})
+          }
+          // otherwise, return a bad request error
+          return res.status(400).json({success:false, msg:'wrong token'})
+    }
+
+
+  })
 
   app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    
-    const {token, pcrResult, role, date} = req.body
+    const {token, pcrResult, role, date, image} = req.body
     // console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
     // const Test_Date = new Date().toLocaleDateString()
     // const Test_Time = new Date().toLocaleTimeString()
@@ -390,7 +429,7 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
     else 
         Test_Status = "Negative"    
     
-    if(!token || !Test_Status || !pcrResult )
+    if(!token || !Test_Status || !pcrResult || !image)
         return res.status(400).json({success:false, message:"Please enter complete data"})
      
     payload = jwt.verify(JSON.parse(token), JWT_SECRET)   
@@ -534,6 +573,14 @@ app.get("/getMyPcr/:token/:role",passport.authenticate('adminAuth', {session:fal
     }
     
       
+})
+
+
+app.get('/requests', async(req,res)=>{
+    connection.con.query('SELECT * from requests join temperature using(TAGID) where PcrStatus = "pending"' , function(error,results,fields){
+        if(error) return res.status(400).json({success:false, msg:error})
+        return res.status(200).json({success:true, data:results})
+    })
 })
 
 module.exports = app
