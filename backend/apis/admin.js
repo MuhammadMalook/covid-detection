@@ -173,7 +173,7 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
     })
   })
 
-  app.get('/faculty',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+app.get('/faculty',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
     console.log("after verify")
     connection.con.query("SELECT name, email, college, TAGID from faculty", function(error, results, fields){
@@ -186,7 +186,7 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
     })
   })  
 
-  app.post("/addUser",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+app.post("/addUser",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    
     const {TAGID, name, email, password, college, role} = req.body
     const register = {TAGID, role}
@@ -209,7 +209,7 @@ app.get('/student',passport.authenticate('adminAuth',{ session: false }) ,async(
 }
 )
 
-  app.post("/add-temp",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+app.post("/add-temp",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    console.log(process.env.EMAIL)
     const {TAGID, BodyTemp} = req.body
    
@@ -290,7 +290,7 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
     })
   })
 
-  app.get('/faculty-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+app.get('/faculty-temp',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
     console.log("after verify")
     connection.con.query("SELECT name, email, college, TAGID, BodyTemp,Test_Date, Test_Time,PcrStatus  from faculty join temperature using(TAGID)", function(error, results, fields){
@@ -304,7 +304,7 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
   })  
 
 
-  app.get('/checkAdmin/:token', async(req, res)=>{
+app.get('/checkAdmin/:token', async(req, res)=>{
     const {token} = req.params
     console.log("params", req.params)
     try{
@@ -351,7 +351,7 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
   })
 
 
-  app.get('/students-pcr',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+app.get('/students-pcr',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
     console.log("student-pcr")
     connection.con.query("SELECT name, email, college, TAGID, pcrResult, Test_Status from student join pcrtest using(TAGID)", function(error, results, fields){
@@ -364,7 +364,7 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
     })
   })
 
-  app.get('/faculty-pcr',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
+app.get('/faculty-pcr',passport.authenticate('adminAuth',{ session: false }) ,async(req, res)=>{
     
     console.log("student-pcr")
     connection.con.query("SELECT name, email, college, TAGID, pcrResult, Test_Status from faculty join pcrtest using(TAGID)", function(error, results, fields){
@@ -377,7 +377,7 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
     })
   })
 
-  app.post('/addRequest',upload.single("image"),passport.authenticate('adminAuth', {session:false}), async(req,res)=>{
+app.post('/addRequest',upload.single("image"),passport.authenticate('adminAuth', {session:false}), async(req,res)=>{
     const image=req.file.filename
     const {token, pcrResult, role, date} = req.body
     //const post = {token, pcrResult, role, date, image}
@@ -400,7 +400,18 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
             const post = {pcrResult,Test_Status, TAGID, imageSrc:image, role, Test_Date:date}
             connection.con.query('INSERT INTO requests SET ?', post, function(error,results, fields){
                 if(error) return res.status(400).json({success:false,message:error})
-                return res.status(200).json({success:true, msg:"request sent"})
+                // let sql = `UPDATE temperature
+                //            SET PcrStatus = ?
+                //            WHERE TAGID = ?`;
+                let sql = `UPDATE temperature SET PcrStatus = "submitted" WHERE TAGID='${TAGID}' AND PcrStatus="pending"`
+
+                // let data = ["submitted"];
+                connection.con.query(sql,  function(error, results, fields){
+                    if(error) return res.status(400).json({success:false,message:error})
+                     return res.status(200).json({success:true, msg:"request sent"})
+                        }
+                    )
+               
             })
         }
     }) 
@@ -417,34 +428,31 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
 
   })
 
-  app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
+app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(req, res, next)=>{
    
-    const {token, pcrResult, role, date, image} = req.body
+    const {TAGID, pcrResult, date, image} = req.body
     // console.log(new Date().toLocaleDateString(), " Time", new Date().toLocaleTimeString())
     // const Test_Date = new Date().toLocaleDateString()
     // const Test_Time = new Date().toLocaleTimeString()
+    console.log(req.body)
     let Test_Status ="normal"
     if(pcrResult == 1)
          Test_Status = "Positive"
     else 
         Test_Status = "Negative"    
     
-    if(!token || !Test_Status || !pcrResult || !image)
+    if(!Test_Status || !pcrResult || !image)
         return res.status(400).json({success:false, message:"Please enter complete data"})
-     
-    payload = jwt.verify(JSON.parse(token), JWT_SECRET)   
-
-    connection.con.query(`SELECT TAGID from ${role} where email='${payload.email}'`, function(error, results, fields){
-        if(error) return res.status(400).json({success:false,message:error})
-        if(results.length > 0)
-        {
-            const TAGID = results[0].TAGID
-            const post = {pcrResult,Test_Status, TAGID}
-            connection.con.query('INSERT INTO pcrtest SET ?', post,
+            
+    const post = {pcrResult,Test_Status, TAGID, imageSrc:image}
+     connection.con.query('INSERT INTO pcrtest SET ?', post,
             function(error,results, fields){
                 if(error) return res.status(400).json({success:false,message:error})
-                connection.con.query('UPDATE temperature SET PcrStatus = ? WHERE TAGID = ?', [Test_Status, TAGID], function(error,results,fields){
+                connection.con.query(`UPDATE temperature SET PcrStatus = '${Test_Status}' WHERE TAGID = '${TAGID}' AND PcrStatus = "submitted"`, function(error,results,fields){
                             if(error) return res.status(400).json({success:false,message:error})
+                            connection.con.query(`DELETE from requests WHERE TAGID= '${TAGID}'`, function(error,results,fields){
+                                if (error) return res.status(400).json({error:error}) 
+                                // return res.status(200).json({success:false, msg: "Requested Accepted"})
                             if(pcrResult  == 1)
                             {
                                 connection.con.query(`SELECT TAGID from temperature WHERE Test_Date='${date}' AND TAGID!='${TAGID}'` , function (error, results, fields) {
@@ -496,7 +504,7 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
                                                                 if (error) console.log(error);
                                                                 console.log(info);
                                                                 });
-
+                                                
                                                // return res.status(200).json({data:results}) //working here to check if IN operator works
                                             })
                                     }
@@ -507,23 +515,22 @@ app.get('/students-temp',passport.authenticate('adminAuth',{ session: false }) ,
                                 }
                                 )
                                 
+                                
                             }
                             else{
                                 console.log("PCR Test is normal")
                             }
-                            return res.status(200).json({success:true, msg:"updated"})
+                            })
+                            
+                            // return res.status(200).json({success:true, msg:"updated"})
                         })
-            
-            
-                
-            })
-        }
-        else{
-            return res.status(200).json({success:true, data:[], msg:"no record found"})
-            }
-    })
-  }      
-  )  
+                    })
+                      
+}) 
+
+app.post('/reject-pcr', passport.authenticate('adminAuth', {session:false}), async(req,res)=>{
+
+})
   
 
 
@@ -577,7 +584,7 @@ app.get("/getMyPcr/:token/:role",passport.authenticate('adminAuth', {session:fal
 
 
 app.get('/requests', async(req,res)=>{
-    connection.con.query('SELECT * from requests join temperature using(TAGID) where PcrStatus = "pending"' , function(error,results,fields){
+    connection.con.query('SELECT requests.TAGID,requests.pcrResult, temperature.BodyTemp, requests.imageSrc, requests.Test_Status, DATE_FORMAT(temperature.Test_Date,\'%Y-%m-%d\') as Test_Date  from requests join temperature using(TAGID) where PcrStatus = "submitted"' , function(error,results,fields){
         if(error) return res.status(400).json({success:false, msg:error})
         return res.status(200).json({success:true, data:results})
     })
