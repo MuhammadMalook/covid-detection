@@ -119,7 +119,7 @@ useEffect(()=>{
             <div className='col-md-12 col-sm-12'>
                 <div className='row'>
                     <div className='col-md-12 col-sm-12'>
-                        <h2>Please Take PCR test and Upload Result within 48 horus</h2>
+                        <h2>Please Take PCR test and Upload Result within 48 hours</h2>
                     </div>
                        
                 </div>
@@ -141,11 +141,11 @@ useEffect(()=>{
                     <div role="group" aria-labelledby="my-radio-group" style={{display:'flex',justifyContent:'space-evenly', alignContent:'center', marginTop:30}}>
                             <label>
                             <input type="radio" name="pcr" value="0" onChange={handleChange}/>
-                                    0
+                                    Negative
                             </label>
                             <label>
                                 <input type="radio" name="pcr" value="1"  onChange={handleChange}/>
-                                1
+                                Positive
                             </label>
                             {date}
                             

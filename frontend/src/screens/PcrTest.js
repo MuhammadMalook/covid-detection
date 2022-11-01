@@ -115,10 +115,7 @@ useEffect(()=>{
                                         <td>{user.name}</td>
                                         <td>{user.email}</td> 
                                         <td>{user.college}</td> 
-                                        <td>{user.pcrResult}</td>   
-                                         
-
-
+                                        <td>{user.Test_Status}</td>   
                                     </tr>
                                 </tbody>
                     })

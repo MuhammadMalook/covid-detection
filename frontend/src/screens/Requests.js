@@ -37,9 +37,9 @@ export default function Requests() {
             }
         }
     }
-    useEffect(()=>{
-        getRequests()
-    },[])
+useEffect(()=>{
+    getRequests()
+},[])
 
   return (
 <>
@@ -118,7 +118,51 @@ export default function Requests() {
                     alert("error")
                 }
                 }}>Accept</button></td>
-                <td><button className="btn btn-warning" type="Reject">Reject</button></td>
+                <td><button className="btn btn-warning" type="Reject" onClick={async()=>{
+
+                    var token =  localStorage.getItem('token')
+                    const body = {TAGID: item.TAGID}
+                    console.log(body)
+                    if(token)
+                    {
+                        console.log(token)
+                        var auth = "Bearer ".concat(JSON.parse(token))
+                        console.log(auth)
+                        const response = await fetch('/reject-pcr', {
+                        method:"POST",
+                        headers:{
+                            "Content-Type":"application/json",
+                            "Authorization": auth,
+
+                        },
+                        body: JSON.stringify(body)
+                    })
+                    if(response.statusText == "Unauthorized")
+                    {
+                        console.log("heeereree")
+                        localStorage.clear()
+                        navigate('/')
+                    }
+                    else{
+                        const jsonData = await response.json()
+                        console.log(jsonData)
+                        console.log(jsonData,"jsonDAta")
+                        //setApi(false)
+                        if(jsonData.success)
+                        {
+                            alert("Successfully Rejected")
+                        }
+                        else {
+                            localStorage.clear()
+                            navigate('/')
+
+                        }
+                    }
+                    }
+                    else{
+                        alert("error")
+                    }
+                }}>Reject</button></td>
         
               </tr>
             })
