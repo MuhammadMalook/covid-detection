@@ -11,10 +11,18 @@ export default function Requests() {
 
 
     const getRequests = async() => {
+        var token =  localStorage.getItem('token')
+
+        var auth = "Bearer ".concat(JSON.parse(token))
     
         isLoading(true)
+
+       
         const response = await fetch('/requests', {
-            method:"GET"
+            method:"GET",
+            headers:{
+                "Authorization":auth
+            }
         })
         if(response.statusText == "Unauthorized")
         {
