@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken')
 var Mailer = require("nodemailer");
 const multer = require("multer");
 const fs = require('fs')
+const path = require('path')
 
 const passport = require('passport')
 require('./userAuth')(passport)
@@ -22,7 +23,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
       console.log(file,"fileeeeeeeeeee")
-      cb(null, file.originalname);
+      cb(null, file.originalname + '-' + Date.now() + path.extname(file.originalname));
     },
   });
 
@@ -36,22 +37,22 @@ const connection = require('../server')
 
 
 
-app.post('/storeImg', upload.single("imageUrl"), async(req,res)=>{
-    if (!req.file) {
-        console.log("No file upload");
-    } else {
-        console.log(req.file.filename)
-        var imgsrc = req.file.filename
-        var insertData = "INSERT INTO requests(TAGID,imageSrc) VALUES(?,?)"
-        connection.con.query(insertData, ["tag4324dfrr",imgsrc], (err, result) => {
-            if (err) throw err
-            console.log("file uploaded")
-        })
-    }
-})
+// app.post('/storeImg', upload.single("imageUrl"), async(req,res)=>{
+//     if (!req.file) {
+//         console.log("No file upload");
+//     } else {
+//         console.log(req.file.filename)
+//         var imgsrc = req.file.filename
+//         var insertData = "INSERT INTO requests(TAGID,imageSrc) VALUES(?,?)"
+//         connection.con.query(insertData, ["tag4324dfrr",imgsrc], (err, result) => {
+//             if (err) throw err
+//             console.log("file uploaded")
+//         })
+//     }
+// })
 
 
-app.get('/sendEmail',async(req,res)=>{
+app.get('/sendEmail',passport.authenticate('adminAuth',{ session: false }),async(req,res)=>{
     const {date, TAGID} = req.body
     console.log(date)
    
@@ -75,7 +76,7 @@ app.get('/sendEmail',async(req,res)=>{
 
             result.forEach((v) => arr.push(v.email));
             console.log(arr)
-            return res.status(200).json({data:results}) //working here to check if IN operator works
+            return res.status(200).json({data:results}) 
         })
         }
         else{
@@ -441,8 +442,11 @@ app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(r
     else 
         Test_Status = "Negative"    
     
-    if(!Test_Status || !pcrResult || !image)
+    if(!Test_Status || !image){
+        console.log(Test_Status, pcrResult, image)
         return res.status(400).json({success:false, message:"Please enter complete data"})
+        
+    }
             
     const post = {pcrResult,Test_Status, TAGID, imageSrc:image}
      connection.con.query('INSERT INTO pcrtest SET ?', post,
@@ -505,7 +509,7 @@ app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(r
                                                                 console.log(info);
                                                                 });
                                                 
-                                               // return res.status(200).json({data:results}) //working here to check if IN operator works
+                                                        return res.status(200).json({success:true, msg: "successfully accepted"})
                                             })
                                     }
                                     else{
@@ -519,6 +523,7 @@ app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(r
                             }
                             else{
                                 console.log("PCR Test is normal")
+                                return res.status(200).json({success:true, msg: "successfully accepted"})
                             }
                             })
                             
@@ -529,7 +534,17 @@ app.post("/add-pcr",passport.authenticate('adminAuth', {session:false}), async(r
 }) 
 
 app.post('/reject-pcr', passport.authenticate('adminAuth', {session:false}), async(req,res)=>{
-
+    const {TAGID} = req.body
+    connection.con.query(`UPDATE temperature SET PcrStatus = "pending" WHERE TAGID = '${TAGID}' AND PcrStatus = "submitted"`, 
+    function(error,results, fields){
+                if (error) return res.status(400).json({error})
+                connection.con.query(`DELETE from requests WHERE TAGID = '${TAGID}'`, function(error, results,fields){
+                    if (error) return res.status(400).json({error})
+                    return res.status(200).json({success:true, msg:"Request Successfully rejected"})
+                })
+        }
+    
+    )
 })
   
 
@@ -583,7 +598,7 @@ app.get("/getMyPcr/:token/:role",passport.authenticate('adminAuth', {session:fal
 })
 
 
-app.get('/requests', async(req,res)=>{
+app.get('/requests',passport.authenticate('adminAuth',{ session: false }), async(req,res)=>{
     connection.con.query('SELECT requests.TAGID,requests.pcrResult, temperature.BodyTemp, requests.imageSrc, requests.Test_Status, DATE_FORMAT(temperature.Test_Date,\'%Y-%m-%d\') as Test_Date  from requests join temperature using(TAGID) where PcrStatus = "submitted"' , function(error,results,fields){
         if(error) return res.status(400).json({success:false, msg:error})
         return res.status(200).json({success:true, data:results})
